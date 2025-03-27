@@ -6,14 +6,13 @@ import (
 	"os"
 
 	"github.com/google/go-github/github"
-	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 )
 
 func GitAuth() (*github.Client, error) {
-	if err := godotenv.Load(); err != nil {
-		return nil, err
-	}
+	// if err := godotenv.Load(); err != nil {
+	// 	return nil, err
+	// }
 	accessToken := os.Getenv("ACCESSTOKEN")
 	ctx := context.Background()
 	fmt.Println(ctx)
