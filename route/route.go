@@ -9,5 +9,6 @@ func RouteTable() *gin.Engine {
 	route := gin.Default()
 	route.POST("/add-transaction", controller.AddTransactionController)
 	route.GET("/transactions", controller.GetTransactionController)
+	route.GET("/transaction/:id", controller.GetByIdTransactionController)
 	return route
 }

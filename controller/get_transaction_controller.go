@@ -8,7 +8,7 @@ import (
 )
 
 func GetTransactionController(ctx *gin.Context) {
-	response, err := helper.GetTransaction()
+	response, err := helper.GetTransaction("")
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 	} else {

@@ -5,9 +5,9 @@ import (
 	"github.com/koulipfs/model"
 )
 
-func GetTransaction() ([]model.Transaction, error) {
+func GetTransaction(id string) ([]model.Transaction, error) {
 
-	txns, err := githubdb.GetTransaction()
+	txns, err := githubdb.GetTransaction(id)
 	if err != nil {
 		return nil, err
 	}
