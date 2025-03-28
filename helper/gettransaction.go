@@ -9,6 +9,7 @@ func GetTransaction(id string) ([]model.Transaction, error) {
 
 	txns, err := githubdb.GetTransaction(id)
 	if err != nil {
+
 		return nil, err
 	}
 	return txns, nil
