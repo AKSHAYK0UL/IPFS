@@ -3,6 +3,8 @@ package githubdb
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"time"
 
 	"github.com/google/go-github/github"
 	"github.com/koulipfs/auth"
@@ -43,9 +45,9 @@ func WriteToGitHub(newEntries model.Transaction) error {
 
 		return err
 	}
-
+	message := fmt.Sprintf("New Transaction added on %s", time.Now().Format("2006-01-02 15:04:05"))
 	opt := &github.RepositoryContentFileOptions{
-		Message: github.String("Append new user entries from local file"),
+		Message: github.String(message),
 		Content: updatedContent,
 		SHA:     github.String(sha),
 		Branch:  github.String("main"),
