@@ -5,7 +5,7 @@ import (
 	"github.com/koulipfs/model"
 )
 
-func GetTransaction(id string) ([]model.Transaction, error) {
+func GetTransaction(id string) ([]model.IPFSTransaction, error) {
 
 	txns, err := githubdb.GetTransaction(id)
 	if err != nil {

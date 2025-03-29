@@ -9,6 +9,7 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/koulipfs/auth"
 	"github.com/koulipfs/constants"
+	helperfunc "github.com/koulipfs/helper_func"
 	"github.com/koulipfs/model"
 )
 
@@ -32,13 +33,43 @@ func WriteToGitHub(newEntries model.Transaction) error {
 		return err
 	}
 
-	var githubContentTxn []model.Transaction
+	var githubContentTxn []model.IPFSTransaction
 	if err := json.Unmarshal([]byte(remoteContent), &githubContentTxn); err != nil {
 
 		return err
 	}
 
-	updated := append(githubContentTxn, newEntries)
+	var newTxn model.IPFSTransaction
+	length := len(githubContentTxn) - 1
+
+	if length == -1 {
+		newTxn = model.IPFSTransaction{
+			Hash:   helperfunc.GenerateHash(newEntries, ""),
+			Index:  0,
+			TxnId:  newEntries.TxnId,
+			ToId:   newEntries.ToId,
+			FromId: newEntries.FromId,
+			Amount: newEntries.Amount,
+			Nonce:  newEntries.Nonce,
+			Time:   newEntries.Time,
+		}
+	} else {
+		lastBlock := githubContentTxn[length]
+		newTxn = model.IPFSTransaction{
+			PrevHash: lastBlock.Hash,
+			Hash:     helperfunc.GenerateHash(newEntries, lastBlock.Hash),
+			Index:    lastBlock.Index + 1,
+			TxnId:    newEntries.TxnId,
+			ToId:     newEntries.ToId,
+			FromId:   newEntries.FromId,
+			Amount:   newEntries.Amount,
+			Nonce:    newEntries.Nonce,
+			Time:     newEntries.Time,
+		}
+
+	}
+
+	updated := append(githubContentTxn, newTxn)
 
 	updatedContent, err := json.MarshalIndent(updated, "", "  ")
 	if err != nil {

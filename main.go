@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	githubdb "github.com/koulipfs/github_db"
 	"github.com/koulipfs/route"
 )
 
@@ -19,6 +20,11 @@ import (
 // read from it (to store it in the IPFS)
 
 func main() {
+	//checks if the file exist or not if not create the file with initial data "[]model.IPFSTransaction{}"
+	_, err := githubdb.GetTransaction("")
+	if err != nil {
+		githubdb.CreateGitDB()
+	}
 	route := route.RouteTable()
 	port := os.Getenv("PORT")
 	if port == "" {
