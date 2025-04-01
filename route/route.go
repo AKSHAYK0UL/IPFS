@@ -15,7 +15,7 @@ func RouteTable() *gin.Engine {
 	router := gin.Default()
 	//CORS middleware
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
+		AllowOrigins:     []string{"https://zahiqibrahim.github.io"},
 		AllowMethods:     []string{http.MethodGet, http.MethodOptions},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
 		ExposeHeaders:    []string{"Content-Length"},
