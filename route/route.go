@@ -23,5 +23,6 @@ func RouteTable() *gin.Engine {
 	router.POST("/add-transaction", middleware.AuthHeaderMiddleware(), controller.AddTransactionController)
 	router.GET("/transactions", controller.GetTransactionController)
 	router.GET("/transaction/:id", controller.GetByIdTransactionController)
+	router.GET("/smart-contract", controller.SmartContractController)
 	return router
 }

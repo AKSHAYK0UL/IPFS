@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"path"
 	"time"
 
 	"github.com/google/go-github/github"
@@ -13,77 +14,95 @@ import (
 	"github.com/koulipfs/model"
 )
 
-func WriteToGitHub(newEntries model.Transaction) error {
+// appends a new transaction to the current pool creating a new pool if full.
+func WriteToGitHub(newEntry model.Transaction) error {
 	ctx := context.Background()
 	client, err := auth.GitAuth()
 	if err != nil {
-
 		return err
 	}
 
-	githubContent, _, _, err := client.Repositories.GetContents(ctx, constants.REPO_OWNER, constants.REPO_NAME, constants.FILE_NAME, nil)
+	//   poolNumber and cap.
+	poolNumber, ok, err := helperfunc.PoolHasCapacity()
 	if err != nil {
-
 		return err
 	}
-	sha := githubContent.GetSHA()
-	remoteContent, err := githubContent.GetContent()
-	if err != nil {
-
-		return err
+	if !ok {
+		poolNumber, err = CreatePoolGitDB()
+		if err != nil {
+			return err
+		}
 	}
 
-	var githubContentTxn []model.IPFSTransaction
-	if err := json.Unmarshal([]byte(remoteContent), &githubContentTxn); err != nil {
+	filePath := path.Join(
+		constants.DIR_NAME,
+		fmt.Sprintf("pool_%d", poolNumber),
+		constants.FILE_NAME,
+	)
 
-		return err
+	//   existing content (404 empty)
+	fileContent, _, _, err := client.Repositories.GetContents(
+		ctx, constants.REPO_OWNER, constants.REPO_NAME, filePath, nil,
+	)
+	var txns []model.IPFSTransaction
+	var sha *string
+	if err == nil && fileContent != nil {
+		sha = fileContent.SHA
+		raw, _ := fileContent.GetContent()
+		_ = json.Unmarshal([]byte(raw), &txns)
 	}
 
-	var newTxn model.IPFSTransaction
-	length := len(githubContentTxn) - 1
+	//  new block
+	var newBlock model.IPFSTransaction
+	if len(txns) == 0 {
+		newBlock = model.IPFSTransaction{
 
-	if length == -1 {
-		newTxn = model.IPFSTransaction{
-			Hash:   helperfunc.GenerateHash(newEntries, ""),
-			Index:  0,
-			TxnId:  newEntries.TxnId,
-			ToId:   newEntries.ToId,
-			FromId: newEntries.FromId,
-			Amount: newEntries.Amount,
-			Nonce:  newEntries.Nonce,
-			Time:   newEntries.Time,
+			Hash:      helperfunc.GenerateHash(newEntry, ""),
+			Index:     0,
+			PoolIndex: poolNumber,
+			TxnId:     newEntry.TxnId,
+			ToId:      newEntry.ToId,
+			FromId:    newEntry.FromId,
+			Amount:    newEntry.Amount,
+			Nonce:     newEntry.Nonce,
+			Time:      newEntry.Time,
 		}
 	} else {
-		lastBlock := githubContentTxn[length]
-		newTxn = model.IPFSTransaction{
-			PrevHash: lastBlock.Hash,
-			Hash:     helperfunc.GenerateHash(newEntries, lastBlock.Hash),
-			Index:    lastBlock.Index + 1,
-			TxnId:    newEntries.TxnId,
-			ToId:     newEntries.ToId,
-			FromId:   newEntries.FromId,
-			Amount:   newEntries.Amount,
-			Nonce:    newEntries.Nonce,
-			Time:     newEntries.Time,
+		last := txns[len(txns)-1]
+		newBlock = model.IPFSTransaction{
+			PrevHash:  last.Hash,
+			Hash:      helperfunc.GenerateHash(newEntry, last.Hash),
+			Index:     last.Index + 1,
+			PoolIndex: poolNumber,
+			TxnId:     newEntry.TxnId,
+			ToId:      newEntry.ToId,
+			FromId:    newEntry.FromId,
+			Amount:    newEntry.Amount,
+			Nonce:     newEntry.Nonce,
+			Time:      newEntry.Time,
 		}
-
 	}
+	txns = append(txns, newBlock)
 
-	updated := append(githubContentTxn, newTxn)
-
-	updatedContent, err := json.MarshalIndent(updated, "", "  ")
-	if err != nil {
-
-		return err
-	}
-	message := fmt.Sprintf("New Transaction added on %s", time.Now().Format("2006-01-02 15:04:05"))
-	opt := &github.RepositoryContentFileOptions{
-		Message: github.String(message),
-		Content: updatedContent,
-		SHA:     github.String(sha),
+	content, _ := json.MarshalIndent(txns, "", "  ")
+	opts := &github.RepositoryContentFileOptions{
+		Message: github.String(fmt.Sprintf(
+			"Add txn to pool_%d at %s",
+			poolNumber, time.Now().Format(time.RFC3339),
+		)),
+		Content: content,
 		Branch:  github.String("main"),
+		SHA:     sha,
 	}
 
-	_, _, err = client.Repositories.UpdateFile(ctx, constants.REPO_OWNER, constants.REPO_NAME, constants.FILE_NAME, opt)
+	if sha == nil {
+		_, _, err = client.Repositories.CreateFile(ctx,
+			constants.REPO_OWNER, constants.REPO_NAME, filePath, opts,
+		)
+	} else {
+		_, _, err = client.Repositories.UpdateFile(ctx,
+			constants.REPO_OWNER, constants.REPO_NAME, filePath, opts,
+		)
+	}
 	return err
 }
