@@ -15,7 +15,11 @@ func SmartContractController(ctx *gin.Context) {
 	} else {
 		invalidBlocks, err := helper.SmartContract(response)
 		if err != nil {
-			ctx.String(http.StatusInternalServerError, err.Error())
+			if len(invalidBlocks) > 0 {
+				ctx.JSON(http.StatusInternalServerError, invalidBlocks)
+			} else {
+				ctx.String(http.StatusInternalServerError, err.Error())
+			}
 		} else if len(invalidBlocks) == 0 {
 			ctx.JSON(http.StatusOK, gin.H{"message": "chain is valid"})
 
