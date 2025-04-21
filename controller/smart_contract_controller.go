@@ -16,7 +16,11 @@ func SmartContractController(ctx *gin.Context) {
 		invalidBlocks, err := helper.SmartContract(response)
 		if err != nil {
 			if len(invalidBlocks) > 0 {
-				ctx.JSON(http.StatusInternalServerError, invalidBlocks)
+				ctx.JSON(http.StatusBadRequest, gin.H{
+					"error":                "Invalid transactions found in one or more pools.",
+					"invalid_transactions": invalidBlocks,
+				})
+
 			} else {
 				ctx.String(http.StatusInternalServerError, err.Error())
 			}
