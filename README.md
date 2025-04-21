@@ -36,8 +36,8 @@ A GitHub-backed transaction service with IPFS-like pooling and blockchain-style 
 
 1. **Clone** the repo:
    ```bash
-   git clone https://github.com/<username>/<repo>.git
-   cd <repo>
+   git clone https://github.com/AKSHAYK0UL/IPFS.git
+   cd IPFS
    ```
 2. **Dependencies**:
    ```bash
@@ -45,7 +45,7 @@ A GitHub-backed transaction service with IPFS-like pooling and blockchain-style 
    ```
 3. **Build**:
    ```bash
-   go build -o tx-service ./...
+   go build .
    ```
 4. **Environment**: Create a `.env` file in project root:
    ```dotenv
@@ -63,7 +63,7 @@ A GitHub-backed transaction service with IPFS-like pooling and blockchain-style 
 ## Running the Service
 
 ```bash
-./tx-service
+go run main.go
 ```
 
 By default, the server listens on port `8080`. Customize via environment variables or flags as needed.
