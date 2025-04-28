@@ -55,8 +55,22 @@ func WriteToGitHub(newEntry model.Transaction) error {
 	//  new block
 	var newBlock model.IPFSTransaction
 	if len(txns) == 0 {
-		newBlock = model.IPFSTransaction{
 
+		payload := fmt.Sprintf("%d|%s|%s|%s|%f|%d|%s",
+			0,
+			"",
+			newEntry.TxnId,
+			newEntry.ToId,
+			newEntry.Amount,
+			newEntry.Nonce,
+			newEntry.Time,
+		)
+
+		// Generate CID/hash
+		CID := helperfunc.GenerateCID(payload)
+
+		newBlock = model.IPFSTransaction{
+			CID:       CID,
 			Hash:      helperfunc.GenerateHash(newEntry, ""),
 			Index:     0,
 			PoolIndex: poolNumber,
@@ -69,7 +83,20 @@ func WriteToGitHub(newEntry model.Transaction) error {
 		}
 	} else {
 		last := txns[len(txns)-1]
+		payload := fmt.Sprintf("%d|%s|%s|%s|%f|%d|%s",
+			last.Index+1,
+			last.Hash,
+			newEntry.TxnId,
+			newEntry.ToId,
+			newEntry.Amount,
+			newEntry.Nonce,
+			newEntry.Time,
+		)
+
+		// Generate CID/hash
+		CID := helperfunc.GenerateCID(payload)
 		newBlock = model.IPFSTransaction{
+			CID:       CID,
 			PrevHash:  last.Hash,
 			Hash:      helperfunc.GenerateHash(newEntry, last.Hash),
 			Index:     last.Index + 1,

@@ -10,6 +10,7 @@ type Transaction struct {
 }
 
 type IPFSTransaction struct {
+	CID       string  `json:"cid"`
 	Index     int     `json:"index"`
 	PoolIndex int     `json:"pool_index"`
 	Hash      string  `json:"hash"`
