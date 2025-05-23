@@ -10,7 +10,7 @@ import (
 
 func CORS() gin.HandlerFunc {
 	corsMiddleware := cors.New(cors.Config{
-		AllowOrigins:     []string{"https://zahiqibrahim.github.io"},
+		AllowOrigins:     []string{"https://akshayk0ul.github.io"},
 		AllowMethods:     []string{http.MethodGet, http.MethodOptions},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
 		ExposeHeaders:    []string{"Content-Length"},
