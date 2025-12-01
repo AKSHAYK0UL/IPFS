@@ -132,7 +132,7 @@ Missing or invalid headers return `401 Unauthorized`.
 
 ---
 
-## Snapshot-Based Rollback (Under Development)
+## Snapshot-Based Rollback
 
 The rollback mechanism ensures that any detected corruption or invalid transaction pool can be reverted automatically:
 
@@ -142,14 +142,4 @@ The rollback mechanism ensures that any detected corruption or invalid transacti
    - Use GitHub Tags & Refs API to reset `main` branch to the snapshot tag commit SHA.
    - Discard all commits made after the snapshot.
 4. **Error Reporting**: The API response will include the invalid transaction details and a rollback status.
-
-### Development TODOs
-
-- [ ] Implement `CreateSnapshotTag(ctx)` in `githubdb`:
-  - Calls `Repositories.CreateRef` with `refs/tags/<snapshot>` pointing at current HEAD.
-- [ ] Implement `RollbackToTag(ctx, tag)`:
-  - Fetch tag SHA via `Repositories.GetRef`, then `Repositories.UpdateRef` on `refs/heads/main` with `force=true`.
-- [ ] Add unit tests for happy-path and failure rollback.
-- [ ] Extend API to expose snapshot and rollback endpoints for manual control.
-
 ---
